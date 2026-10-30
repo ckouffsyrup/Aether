@@ -688,3 +688,61 @@ button.s-group-title:hover {
   list-style: none;
   margin-left: -18px;
 }
+
+/* v0.15.2: global hotkey row. */
+.s-hotkey {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 6px 4px 4px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.s-hotkey.is-off .s-keys kbd {
+  color: #a9a3bb;
+  text-decoration: line-through;
+  text-decoration-color: #f0c67499;
+}
+.s-hotkey.is-recording {
+  min-width: 170px;
+  padding: 4px 12px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 70%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  animation: s-hotkey-pulse 1.4s ease-in-out infinite;
+}
+.shell[data-motion="off"] .s-hotkey.is-recording {
+  animation: none;
+}
+@keyframes s-hotkey-pulse {
+  50% {
+    border-color: var(--accent);
+  }
+}
+.s-hotkey-wait {
+  font-size: 12px;
+  color: #b9b1d3;
+}
+.s-pill {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font: 600 10.5px/1.2 "DM Sans", sans-serif;
+  letter-spacing: 0.02em;
+}
+.s-pill.is-ok {
+  color: #7fdcb0;
+  background: #173126;
+}
+.s-pill.is-warn {
+  color: #f0c674;
+  background: #2c2416;
+}
+.s-text span.tone-warn {
+  color: #f0c674;
+}
+.s-text span.tone-ok {
+  color: #7fdcb0;
+}
+.s-hotkey-row .s-inline {
+  flex-wrap: nowrap;
+}

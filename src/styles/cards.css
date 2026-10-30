@@ -359,3 +359,9 @@ html.is-reordering .app-card:not(.is-drag-source):hover {
 .drag-ghost > .app-card {
   background: var(--card-color, #151520) !important;
 }
+
+/* v0.15.2: Settings → Appearance → App icons on cards. Grid only; the space is
+   kept so titles don't jump when the setting changes. */
+.app-grid:not(.list-layout) .app-card.no-glyph .app-glyph {
+  visibility: hidden;
+}

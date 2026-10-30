@@ -14,9 +14,9 @@ Built with Tauri 2 (Rust) and React + TypeScript.
 - **Detect apps:** scans the Start Menu, registered App Paths and Windows apps; you confirm before anything is added.
 - **Real icons:** extracted from Windows in the background, cached as files, refreshed when a program updates. Or pick your own icon and card artwork (drag an image onto the editor).
 - **Right-click menu:** Open, Run as administrator, Open file location, Copy path, Edit, Change icon or art, Move to category, and more.
-- **Quick launcher:** `Ctrl + K` inside Aether, `Ctrl + Alt + Space` from anywhere.
+- **Quick launcher:** `Ctrl + K` inside Aether, `Ctrl + Alt + Space` from anywhere (change it in **Settings → Desktop**).
 - **Desktop integration:** tray icon, launch at sign-in (optionally hidden in the tray), single instance.
-- **Make it yours:** accent and surface colors, wallpaper, density, corner radius, scale, list or grid, and Off / Subtle / Full motion with a branded startup animation.
+- **Make it yours:** accent and surface colors, app icons on cards (always, only without artwork, or never), wallpaper, density, corner radius, scale, list or grid, and Off / Subtle / Full motion with a branded startup animation.
 - **Backups:** one JSON file with every shortcut, image and setting. NexusBar exports can be imported.
 - **Automatic updates:** signed updates from GitHub Releases. A notice offers Restart now; nothing installs without you.
 
@@ -56,7 +56,7 @@ The first `npm run desktop` compiles the Rust side and takes a few minutes; late
 
 | Keys | Action |
 | --- | --- |
-| `Ctrl + Alt + Space` | Open Aether's quick launcher from anywhere in Windows |
+| `Ctrl + Alt + Space` | Open Aether's quick launcher from anywhere in Windows (rebind in **Settings → Desktop**) |
 | `Ctrl + K` | Quick launcher inside Aether |
 | `Ctrl + ,` | Settings |
 | `Shift + F10` or the Menu key | Right-click menu for the focused shortcut |
@@ -67,7 +67,7 @@ The first `npm run desktop` compiles the Rust side and takes a few minutes; late
 ## Where your data lives
 
 - **Shortcuts and settings:** Aether's webview storage. Use **Settings → Data → Backup → Export** before reinstalling.
-- **Images, icon cache and wallpaper:** `%APPDATA%\studio.veyl.aether\` (`card-art\`, `icon-cache\`, `custom-wallpaper`). **Settings → About → Open folder** takes you there.
+- **Images, icon cache and wallpaper:** `%APPDATA%\studio.veyl.aether\` (`card-art\`, `icon-cache\`, `custom-wallpaper`, `hotkey.txt`). **Settings → About → Open folder** takes you there.
 
 Removing a shortcut never touches the program or file it points to.
 
@@ -86,6 +86,7 @@ src/
 src-tauri/src/
   lib.rs              plugins, tray, global hotkey, window setup
   discovery.rs        installed-app scanning
+  hotkey.rs           global hotkey: saved combination, status, rebinding
   icons.rs            icon extraction and on-disk cache
   launch.rs           launching, Run as administrator, File Explorer
   storage.rs          wallpaper, card art, custom icons, app-data folder
@@ -143,7 +144,7 @@ The version lives in `package.json` (the app and `tauri.conf.json` read it from 
 
 - **"Cannot find module" or a missing plugin error:** run `npm run repair`, then `npm run desktop`.
 - **The taskbar still shows an old icon:** Windows caches icons. Sign out and back in, or restart Explorer.
-- **`Ctrl + Alt + Space` does nothing:** another program owns that shortcut. Aether still runs; close the other program or use the tray icon.
+- **The global hotkey does nothing:** check **Settings → Desktop → Quick launcher hotkey**. "Not active" means another program owns that combination: click **Change** and press a different one (for example `Ctrl + Alt + A`). If the recorder shows nothing when you press a combination, another program has that one too.
 - **A release run failed:** open it on the Actions tab; the red step says what's wrong (usually a missing secret, a tag that doesn't match the version, or no changelog section). Fix it, then delete and re-push the tag: `git tag -d v0.15.1`, `git push origin :refs/tags/v0.15.1`, `git tag v0.15.1`, `git push origin v0.15.1`.
 - **"Updates: Not set up in this build" in About:** the build has no public key. Run `npm run setup-signing`, commit `tauri.conf.json`, release again.
 - **Inspecting the UI in development:** `Shift + right-click` opens the browser's own menu (with Inspect) in `npm run desktop`.

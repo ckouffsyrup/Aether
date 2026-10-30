@@ -36,6 +36,10 @@ describe('migratePreferences', () => {
   expect(p.accent).toBe('#ffffff');
   expect(p.radius).toBe(DEFAULT_PREFERENCES.radius);
  });
+ it('fixes an unknown card icon mode', () => {
+  expect(migratePreferences({cardIcons: 'sometimes'}).cardIcons).toBe('always');
+  expect(migratePreferences({cardIcons: 'no-art'}).cardIcons).toBe('no-art');
+ });
  it('treats non-objects as empty', () => {
   expect(migratePreferences('junk')).toEqual(DEFAULT_PREFERENCES);
  });

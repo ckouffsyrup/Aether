@@ -1,4 +1,4 @@
-import {categories, type Category, type Item, type MotionLevel, type Preferences} from '../shared';
+import {CARD_ICONS, categories, type Category, type Item, type MotionLevel, type Preferences} from '../shared';
 import {MOTION_LEVELS} from './storage';
 
 export function guessCategory(name:string):Category{
@@ -39,6 +39,6 @@ export function sanitizeTheme(data:any,defaults:Preferences):Partial<Preferences
   sidebarWidth:clamp(p.sidebarWidth,190,340,254),radius:clamp(p.radius,2,32,14),scale:clamp(p.scale,85,120,100),wallpaperOpacity:clamp(p.wallpaperOpacity,0,70,20),
   density:['compact','comfortable','spacious'].includes(p.density)?p.density:'comfortable',layout:p.layout==='list'?'list':'grid',
   motionLevel,motion:motionLevel!=='off',compact:!!p.compact,sidebarCollapsed:!!p.sidebarCollapsed,
-  categoriesMode:['show','collapse','hide'].includes(p.categoriesMode)?p.categoriesMode:'show',heroOpacity:clamp(p.heroOpacity,0,95,35),
+  categoriesMode:['show','collapse','hide'].includes(p.categoriesMode)?p.categoriesMode:'show',cardIcons:CARD_ICONS.includes(p.cardIcons)?p.cardIcons:defaults.cardIcons,heroOpacity:clamp(p.heroOpacity,0,95,35),
  };
 }

@@ -14,6 +14,9 @@ export const categories:Category[]=['Games','Development','Media','Browsers','To
 export type Item={id:string;name:string;target:string;category:Category;favorite:boolean;lastOpened?:number;icon?:string;iconFile?:string;cardImage?:string;cardArt?:string;cardImageX?:number;cardImageY?:number;launchCount?:number};
 
 export type MotionLevel='off'|'subtle'|'full';
+/** v0.15.2: app icons on grid cards. */
+export type CardIcons='always'|'no-art'|'never';
+export const CARD_ICONS:readonly CardIcons[]=['always','no-art','never'];
 
 export type Preferences={accent:string;compact:boolean;greeting:boolean;startWithWindows:boolean;layout:'grid'|'list';density:'comfortable'|'compact'|'spacious';radius:number;scale:number;
  /** Legacy on/off flag, kept in sync for older versions reading the same data. */
@@ -22,6 +25,8 @@ export type Preferences={accent:string;compact:boolean;greeting:boolean;startWit
  startHidden:boolean;
  /** v0.15: look for updates at launch and every few hours (installing always waits for the user). */
  autoUpdate:boolean;
+ /** v0.15.2: hide the app icon on grid cards (always shown in list view). */
+ cardIcons:CardIcons;
  wallpaper:string;wallpaperOpacity:number;sort:'name'|'recent'|'favorites'|'most-used'|'custom';sidebarColor:string;panelColor:string;cardColor:string;textColor:string;sidebarWidth:number;sidebarCollapsed:boolean;categoriesMode:'show'|'collapse'|'hide';heroOpacity:number;};
 
 

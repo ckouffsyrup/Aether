@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {AlertTriangle, ArrowDownToLine, Info, Search, X} from 'lucide-react';
+import {hotkeyLabel} from '../lib/hotkeys';
 import {categoryIcon, type Item, type MotionLevel} from '../shared';
 import type {ToastState} from '../hooks/useToast';
 import type {UpdateStatus} from '../hooks/useUpdater';
@@ -35,9 +36,11 @@ type QuickProps={
  query:string;setQuery:(q:string)=>void;index:number;setIndex:React.Dispatch<React.SetStateAction<number>>;
  items:Item[];glyphSrc:(item:Item)=>string|undefined;
  onRun:(item:Item)=>void;onClose:()=>void;onContextMenu:(item:Item,e:React.MouseEvent<HTMLElement>)=>void;
+ /** The active global hotkey, or null when it isn't registered. */
+ hotkey:string|null;
 };
-/** Ctrl+K / Ctrl+Alt+Space launcher. */
-export function QuickLauncher({phase,inputRef,query,setQuery,index,setIndex,items,glyphSrc,onRun,onClose,onContextMenu}:QuickProps){
+/** Ctrl+K / global-hotkey launcher. */
+export function QuickLauncher({phase,inputRef,query,setQuery,index,setIndex,items,glyphSrc,onRun,onClose,onContextMenu,hotkey}:QuickProps){
  return <div className={'scrim quick-scrim phase-'+phase} onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}>
   <div className="quick-panel" role="dialog" aria-modal="true" aria-label="Quick launcher">
    <label className="quick-input"><Search size={22}/><input ref={inputRef} value={query} onChange={e=>setQuery(e.target.value)} onKeyDown={e=>{
@@ -49,7 +52,7 @@ export function QuickLauncher({phase,inputRef,query,setQuery,index,setIndex,item
     <span className="quick-icon">{src?<img className="native-icon" src={src} alt="" decoding="async"/>:categoryIcon(item.category)}</span>
     <span><b>{item.name}</b><small>{item.category}</small></span>{i===index&&<kbd>↵</kbd>}
    </button>}):<p>No matching shortcuts. Add one from your library.</p>}</div>
-   <div className="quick-footer">CTRL + K in Aether · CTRL + ALT + SPACE system-wide · ↑ ↓ to select · Enter to launch · Right-click for more</div>
+   <div className="quick-footer">CTRL + K in Aether{hotkey&&` · ${hotkeyLabel(hotkey).toUpperCase()} system-wide`} · ↑ ↓ to select · Enter to launch · Right-click for more</div>
   </div>
  </div>;
 }

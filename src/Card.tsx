@@ -1,10 +1,12 @@
 import React, {memo, useState} from 'react';
 import {ArrowUpRight, Edit3, Star, Trash2} from 'lucide-react';
-import {categoryIcon, type Item, type MotionLevel} from './shared';
+import {categoryIcon, type CardIcons, type Item, type MotionLevel} from './shared';
 
 export type CardProps={
  item:Item;index:number;iconSrc?:string;artSrc?:string;
  bulkMode:boolean;selected:boolean;leaving:boolean;motion:MotionLevel;
+ /** v0.15.2: Settings → Appearance → App icons on cards (grid view only, see cards.css). */
+ cardIcons:CardIcons;
  /** v0.13: can this card be dragged / Alt+arrowed in its grid? */
  reorderable:boolean;dragging:boolean;
  onDragStart:(item:Item,e:React.PointerEvent<HTMLDivElement>)=>void;
@@ -21,11 +23,12 @@ type Ripple={id:number;x:number;y:number};
 let rippleSeed=0;
 
 /** Defined outside App and memoized: cards no longer remount on every keystroke or toast. */
-export const Card=memo(function Card({item,index,iconSrc,artSrc,bulkMode,selected,leaving,motion,reorderable,dragging,onDragStart,onNudge,onActivate,onToggleSelect,onFavorite,onEdit,onRemove,onMenu}:CardProps){
+export const Card=memo(function Card({item,index,iconSrc,artSrc,cardIcons,bulkMode,selected,leaving,motion,reorderable,dragging,onDragStart,onNudge,onActivate,onToggleSelect,onFavorite,onEdit,onRemove,onMenu}:CardProps){
  const [ripples,setRipples]=useState<Ripple[]>([]);
  const [launching,setLaunching]=useState(0);
  const [burst,setBurst]=useState(0);
  const full=motion==='full';
+ const hideGlyph=cardIcons==='never'||(cardIcons==='no-art'&&!!artSrc);
 
  const activate=(e?:React.MouseEvent<HTMLDivElement>)=>{
   if(bulkMode){onToggleSelect(item.id);return}
@@ -45,7 +48,7 @@ export const Card=memo(function Card({item,index,iconSrc,artSrc,bulkMode,selecte
  if(artSrc){style['--card-image']=`url("${artSrc}")`;style['--card-position']=`${item.cardImageX??50}% ${item.cardImageY??50}%`}
 
  return <div
-  className={'app-card'+(artSrc?' has-card-image':'')+(selected?' is-selected':'')+(leaving?' is-leaving':'')+(launching?' is-launching':'')+(dragging?' is-drag-source':'')}
+  className={'app-card'+(artSrc?' has-card-image':'')+(hideGlyph?' no-glyph':'')+(selected?' is-selected':'')+(leaving?' is-leaving':'')+(launching?' is-launching':'')+(dragging?' is-drag-source':'')}
   data-id={item.id} role="button" tabIndex={0} aria-label={`Launch ${item.name}`} style={style}
   aria-roledescription={reorderable?'Reorderable shortcut. Alt + arrow keys to move.':undefined}
   onPointerDown={e=>{if(reorderable)onDragStart(item,e)}}

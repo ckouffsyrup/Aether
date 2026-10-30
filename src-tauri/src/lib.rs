@@ -2,6 +2,7 @@
 //! this file wires up plugins, the tray, the global hotkey and the window.
 
 mod discovery;
+mod hotkey;
 mod icons;
 mod launch;
 mod storage;
@@ -12,7 +13,7 @@ use std::time::Duration;
 use tauri::menu::MenuBuilder;
 use tauri::tray::{TrayIconBuilder, TrayIconEvent};
 use tauri::{Emitter, Manager};
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
+use tauri_plugin_global_shortcut::ShortcutState;
 use tauri_plugin_window_state::StateFlags;
 /// Passed by the Windows login entry (see the autostart plugin below) so Aether
 /// knows it was started at sign-in rather than by the user.
@@ -72,12 +73,12 @@ pub fn run() {
                 })
                 .build(),
         )
+        .manage(hotkey::HotkeyState::default())
         .setup(|app| {
             updates::take_restart_marker(app.handle());
-            // Non-fatal: if another program already owns the hotkey, Aether still starts.
-            if let Err(e) = app.global_shortcut().register("Ctrl+Alt+Space") {
-                eprintln!("Aether: could not register Ctrl+Alt+Space: {e}");
-            }
+            // Non-fatal: if another program owns the hotkey, Aether still starts and
+            // Settings → Desktop says so (and lets you pick another).
+            hotkey::register_saved(app.handle());
             let menu = MenuBuilder::new(app)
                 .text("show", "Show Aether")
                 .text("quit", "Quit Aether")
@@ -133,6 +134,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             discovery::discover_installed_apps,
+            hotkey::hotkey_status,
+            hotkey::set_hotkey,
             icons::extract_app_icons,
             icons::icon_cache_folder,
             icons::icon_cache_lookup,

@@ -3,6 +3,8 @@ import {AlertTriangle, Check, Download, ExternalLink, FolderOpen, HardDrive, Ima
 import {APP_VERSION, isDesktop, type MotionLevel, type Preferences} from './shared';
 import type {UpdateStatus} from './hooks/useUpdater';
 import {releaseNoteLines, timeAgo} from './lib/updates';
+import {DEFAULT_HOTKEY, hotkeyLabel, hotkeyParts, recordKey} from './lib/hotkeys';
+import type {Hotkey} from './hooks/useHotkey';
 
 /**
  * v0.14 Settings: two-pane layout (section list + one section at a time),
@@ -33,6 +35,7 @@ export type SettingsApi={
  scanApps:()=>void;scanning:boolean;
  iconSummary:string;iconCaching:boolean;clearIconCache:()=>void;
  openQuickLauncher:()=>void;
+ hotkey:Pick<Hotkey,'status'|'busy'|'change'|'retry'|'reset'>;
  resetAllSettings:()=>void;clearLibrary:()=>void;libraryCount:number;
  dataFolder:string;openDataFolder:()=>void;
  updates:{status:UpdateStatus;lastChecked:number|null;check:()=>void;install:()=>void;openReleases:()=>void};
@@ -74,7 +77,85 @@ function Mark({text,query}:{text:string;query:string}){
  return <>{text.slice(0,i)}<mark>{text.slice(i,i+query.length)}</mark>{text.slice(i+query.length)}</>;
 }
 
-type Row={id:string;section:SectionId;title:string;desc?:string;keywords?:string;control?:React.ReactNode;block?:React.ReactNode;danger?:boolean};
+/**
+ * v0.15.2: the global hotkey with its status and a recorder. Click Change, press
+ * the new combination; it's registered right away, or the old one stays if
+ * Windows refuses it.
+ */
+function HotkeyRow({hk,title,onTry}:{hk:SettingsApi['hotkey'];title:React.ReactNode;onTry:()=>void}){
+ const [recording,setRecording]=useState(false);
+ const [held,setHeld]=useState<string[]>([]);
+ const [note,setNote]=useState<{text:string;tone:'warn'|'ok'}|null>(null);
+ const rowRef=useRef<HTMLDivElement>(null);
+ const {status}=hk;
+ const desktop=isDesktop();
+
+ useEffect(()=>{
+  if(!recording)return;
+  const stop=()=>{setRecording(false);setHeld([])};
+  const modifiers=(e:KeyboardEvent)=>[e.ctrlKey&&'Ctrl',e.altKey&&'Alt',e.shiftKey&&'Shift',e.metaKey&&'Win'].filter(Boolean) as string[];
+  const down=(e:KeyboardEvent)=>{
+   // Capture phase on window: the rest of Aether never sees keys while recording.
+   e.preventDefault();e.stopImmediatePropagation();
+   if(e.repeat)return;
+   if(e.key==='Escape'&&!e.ctrlKey&&!e.altKey&&!e.shiftKey&&!e.metaKey){stop();return}
+   const r=recordKey(e);
+   if(r.kind==='partial'){setHeld(modifiers(e));return}
+   if(r.kind==='invalid'){setHeld(hotkeyParts(r.parts.join('+')));setNote({text:r.reason,tone:'warn'});return}
+   stop();
+   const label=hotkeyLabel(r.accelerator);
+   if(r.accelerator===status.shortcut&&status.active){setNote({text:`${label} is already your hotkey.`,tone:'ok'});return}
+   const previous=status.active?hotkeyLabel(status.shortcut):null;
+   void hk.change(r.accelerator).then(error=>setNote(error
+    ?{text:`${label}: ${error}`+(previous?` ${previous} still works.`:''),tone:'warn'}
+    :{text:`Saved. ${label} now opens Aether from anywhere.`,tone:'ok'}));
+  };
+  const up=(e:KeyboardEvent)=>{e.preventDefault();e.stopImmediatePropagation();setHeld(modifiers(e))};
+  const outside=(e:PointerEvent)=>{if(!rowRef.current?.contains(e.target as Node))stop()};
+  window.addEventListener('keydown',down,true);
+  window.addEventListener('keyup',up,true);
+  window.addEventListener('blur',stop);
+  document.addEventListener('pointerdown',outside,true);
+  return()=>{
+   window.removeEventListener('keydown',down,true);
+   window.removeEventListener('keyup',up,true);
+   window.removeEventListener('blur',stop);
+   document.removeEventListener('pointerdown',outside,true);
+  };
+ },[recording,status,hk]);
+
+ const keys=recording?held:hotkeyParts(status.shortcut);
+ const desc=!desktop?'Works in the desktop app. Ctrl + K opens search inside Aether.'
+  :recording?'Press the new combination with Ctrl, Alt or Win. Esc cancels. If nothing shows up, another app already owns that combination.'
+  :status.active?'Opens Aether and its search from anywhere, even from the tray. Ctrl + K works inside Aether.'
+  :`${status.error??'Not active.'} Pick a different combination, or close the other app and retry.`;
+
+ return <div ref={rowRef} className="s-row s-hotkey-row">
+  <div className="s-text">
+   <b>{title}</b>
+   <span className={desktop&&!status.active&&!recording?'tone-warn':undefined}>{desc}</span>
+   {note&&(!recording||note.tone==='warn')&&<span className={'s-hotkey-note tone-'+note.tone} role="status">{note.text}</span>}
+  </div>
+  <div className="s-control"><div className="s-inline">
+   <span className={'s-hotkey'+(recording?' is-recording':'')+(desktop&&!status.active&&!recording?' is-off':'')} aria-live="polite">
+    {keys.length?<span className="s-keys">{keys.map(k=><kbd key={k}>{k}</kbd>)}</span>:<span className="s-hotkey-wait">Press keys…</span>}
+    {desktop&&!recording&&<span className={'s-pill '+(status.active?'is-ok':'is-warn')}>{status.active?'Active':'Not active'}</span>}
+   </span>
+   {recording
+    ?<button type="button" className="secondary" onClick={()=>{setRecording(false);setHeld([])}}>Cancel</button>
+    :<>
+     <button type="button" className="secondary" disabled={!desktop||hk.busy} onClick={()=>{setNote(null);setHeld([]);setRecording(true)}}><Keyboard size={15}/> Change</button>
+     {desktop&&!status.active&&<button type="button" className="secondary" disabled={hk.busy} onClick={()=>void hk.retry().then(error=>setNote(error?{text:error,tone:'warn'}:{text:`${hotkeyLabel(status.shortcut)} is active now.`,tone:'ok'}))}><RefreshCw size={15}/> Retry</button>}
+     {desktop&&status.shortcut!==DEFAULT_HOTKEY&&<button type="button" className="text-button" disabled={hk.busy} title={`Back to ${hotkeyLabel(DEFAULT_HOTKEY)}`} onClick={()=>void hk.reset().then(error=>setNote(error?{text:`${hotkeyLabel(DEFAULT_HOTKEY)}: ${error}`,tone:'warn'}:{text:`Back to ${hotkeyLabel(DEFAULT_HOTKEY)}.`,tone:'ok'}))}>Reset</button>}
+     {status.active&&<button type="button" className="secondary" onClick={onTry}>Try it</button>}
+    </>}
+  </div></div>
+ </div>;
+}
+
+type Row={id:string;section:SectionId;title:string;desc?:string;keywords?:string;control?:React.ReactNode;block?:React.ReactNode;danger?:boolean;
+ /** Renders its own row markup (for rows with internal state). */
+ custom?:(title:React.ReactNode)=>React.ReactNode};
 
 export function SettingsPage({api}:{api:SettingsApi}){
  const [section,setSection]=useState<SectionId>(()=>{try{const v=localStorage.getItem(SECTION_KEY);return SECTIONS.some(s=>s.id===v)?v as SectionId:'appearance'}catch{return 'appearance'}});
@@ -99,6 +180,7 @@ export function SettingsPage({api}:{api:SettingsApi}){
   {id:'textColor',section:'appearance',title:'Primary text',desc:'Headings and labels.',keywords:'color font text',control:<ColorField value={p.textColor} label="Text color" onChange={v=>api.setPref('textColor',v)}/>},
   {id:'radius',section:'appearance',title:'Corner radius',desc:'How rounded cards are.',keywords:'round corners shape',control:<Slider label="Corner radius" value={p.radius} min={2} max={32} unit="px" onChange={v=>api.setPref('radius',v)}/>},
   {id:'scale',section:'appearance',title:'Interface scale',desc:'Size of everything in the main area.',keywords:'zoom size bigger smaller',control:<Slider label="Interface scale" value={p.scale} min={85} max={120} step={5} unit="%" onChange={v=>api.setPref('scale',v)}/>},
+  {id:'cardIcons',section:'appearance',title:'App icons on cards',desc:'Grid view. Hide them to let card artwork show through; list view always shows icons.',keywords:'icon logo glyph hide card art artwork',control:<Segmented label="App icons on cards" value={p.cardIcons} onChange={v=>api.setPref('cardIcons',v)} options={[{value:'always',label:'Always'},{value:'no-art',label:'Without art'},{value:'never',label:'Never'}]}/>},
   {id:'density',section:'appearance',title:'Density',desc:'Spacing inside cards and pages.',keywords:'spacing padding compact spacious',control:<Segmented label="Density" value={p.density} onChange={v=>api.setPref('density',v)} options={[{value:'compact',label:'Compact'},{value:'comfortable',label:'Comfortable'},{value:'spacious',label:'Spacious'}]}/>},
   {id:'theme',section:'appearance',title:'Theme file',desc:'Share your look. Shortcuts and wallpaper are never included.',keywords:'export import theme share json',control:<div className="s-inline"><button type="button" className="secondary" onClick={api.exportTheme}><Save size={15}/> Export</button><button type="button" className="secondary" onClick={api.importTheme}><Upload size={15}/> Import</button></div>},
   // ---- Background ----
@@ -131,7 +213,7 @@ export function SettingsPage({api}:{api:SettingsApi}){
   // ---- Desktop ----
   {id:'startWithWindows',section:'desktop',title:'Launch when Windows starts',desc:'Start Aether automatically when you sign in.',keywords:'startup login boot autostart',control:<Toggle label="Launch when Windows starts" disabled={!isDesktop()} checked={p.startWithWindows} onChange={v=>api.setPref('startWithWindows',v)}/>},
   {id:'startHidden',section:'desktop',title:'Start hidden in the tray',desc:'At sign-in, wait in the tray instead of opening the window.',keywords:'tray minimized hidden startup',control:<Toggle label="Start hidden in the tray" disabled={!isDesktop()||!p.startWithWindows} checked={p.startHidden} onChange={v=>api.setPref('startHidden',v)}/>},
-  {id:'hotkey',section:'desktop',title:'Quick launcher hotkey',desc:'Opens Aether and its search from anywhere. Ctrl + K works inside Aether.',keywords:'shortcut keyboard hotkey quick launch search',control:<div className="s-inline"><span className="s-keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>Space</kbd></span><button type="button" className="secondary" onClick={api.openQuickLauncher}><Keyboard size={15}/> Try it</button></div>},
+  {id:'hotkey',section:'desktop',title:'Quick launcher hotkey',desc:'Opens Aether and its search from anywhere. Change it if another app uses it.',keywords:'shortcut keyboard hotkey quick launch search global ctrl alt space rebind change',custom:title=><HotkeyRow key="hotkey" hk={api.hotkey} title={title} onTry={api.openQuickLauncher}/>},
   {id:'close',section:'desktop',title:'Closing the window',desc:'Hides Aether to the system tray. Use Quit Aether in the tray menu to exit completely. Opening Aether again brings the existing window forward.',keywords:'tray close quit exit minimize'},
   // ---- Data ----
   {id:'backup',section:'data',title:'Backup',desc:'One file with every shortcut, icon, card image and setting. Importing replaces your library (you confirm first).',keywords:'export import backup restore json',control:<div className="s-inline"><button type="button" className="secondary" onClick={api.exportBackup}><Download size={15}/> Export</button><button type="button" className="secondary" onClick={api.importBackup}><Upload size={15}/> Import</button></div>},
@@ -157,7 +239,7 @@ export function SettingsPage({api}:{api:SettingsApi}){
  const resetSection=(id:SectionId)=>{
   const pick=(keys:(keyof Preferences)[])=>Object.fromEntries(keys.map(k=>[k,d[k]])) as Partial<Preferences>;
   const map:Partial<Record<SectionId,(keyof Preferences)[]>>={
-   appearance:['accent','sidebarColor','panelColor','cardColor','textColor','radius','scale','density'],
+   appearance:['accent','sidebarColor','panelColor','cardColor','textColor','radius','scale','cardIcons','density'],
    background:['wallpaperOpacity','heroOpacity'],
    motion:['motionLevel'],
    library:['sort','layout','compact','categoriesMode','greeting','sidebarCollapsed','sidebarWidth'],
@@ -168,7 +250,9 @@ export function SettingsPage({api}:{api:SettingsApi}){
 
  const results=q?rows.filter(r=>`${r.title} ${r.desc??''} ${r.keywords??''}`.toLowerCase().includes(q)):[];
  const current=SECTIONS.find(s=>s.id===section)!;
- const renderRow=(r:Row)=>r.block
+ const renderRow=(r:Row)=>r.custom
+  ?<React.Fragment key={r.id}>{r.custom(<Mark text={r.title} query={query.trim()}/>)}</React.Fragment>
+  :r.block
   ?<div key={r.id} className="s-block">{r.block}</div>
   :<div key={r.id} className={'s-row'+(r.danger?' is-danger':'')}><div className="s-text"><b><Mark text={r.title} query={query.trim()}/></b>{r.desc&&<span>{r.desc}</span>}</div>{r.control&&<div className="s-control">{r.control}</div>}</div>;
 

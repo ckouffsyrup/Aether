@@ -2,6 +2,12 @@
 
 Newest first. Entries are numbered continuously across versions (the numbers are referenced in code comments and discussions). "Validation" notes record how each change was checked.
 
+## v0.15.2 — Card icons and hotkey fixes — 2026-10-30
+- **125 — App icons on cards:** Settings → Appearance → "App icons on cards": Always, Without art (hidden on cards that have artwork) or Never. Grid view only; list view keeps its icons. Included in theme files and the Appearance reset.
+- **126 — Hotkey status:** Settings → Desktop shows whether the quick launcher hotkey is Active or Not active, and why. If another app owns it, Aether says so once with a toast (when the window is on screen) instead of failing silently.
+- **127 — Change the hotkey:** click Change and press a new combination (needs Ctrl, Alt or Win; Windows' own shortcuts are refused). It's registered right away; if Windows refuses it, the old one keeps working. Retry and Reset (back to Ctrl + Alt + Space) are there too. The combination is saved in the app-data folder so it works at sign-in, and the quick launcher footer shows the current one.
+- **Validation:** typecheck clean; 44 unit tests pass (new: key recording, display names, card icon migration and theme import). In a headless browser with a mocked backend: all three icon modes in grid and list, Appearance reset, the hotkey toast (once, and not again), Not active / Active states, Retry, refused and accepted combinations, keys swallowed while recording (Ctrl + K doesn't open search), Esc and click-outside cancel, Win key display, search, browser preview. Earlier interaction suites unchanged apart from the new row. Rust module compiled against mocks.
+
 ## v0.15.1 — Test update — 2026-10-30
 - **124 — Test release:** checking that installed copies update themselves.
 

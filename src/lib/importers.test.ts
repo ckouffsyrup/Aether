@@ -52,6 +52,10 @@ describe('sanitizeTheme', () => {
   expect('wallpaper' in t).toBe(false);
   expect('sort' in t).toBe(false);
  });
+ it('carries the card icon mode and rejects unknown values', () => {
+  expect(sanitizeTheme({format: 'aether-theme-v1', preferences: {cardIcons: 'never'}}, DEFAULT_PREFERENCES).cardIcons).toBe('never');
+  expect(sanitizeTheme({format: 'aether-theme-v1', preferences: {cardIcons: 'huge'}}, DEFAULT_PREFERENCES).cardIcons).toBe('always');
+ });
  it('migrates the old motion flag', () => {
   expect(sanitizeTheme({format: 'aether-theme-v1', preferences: {motion: false}}, DEFAULT_PREFERENCES).motionLevel).toBe('off');
  });

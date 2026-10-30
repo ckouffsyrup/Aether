@@ -20,6 +20,7 @@ import {useLibraryFiles} from './hooks/useLibraryFiles';
 import {useIconCache} from './hooks/useIconCache';
 import {useReorder} from './hooks/useReorder';
 import {useUpdater} from './hooks/useUpdater';
+import {useHotkey} from './hooks/useHotkey';
 import {errorText, launch, native} from './lib/native';
 import {blobToDataUrl, formatBytes, mimeForFile, prepareCardImage, readIconFile} from './lib/images';
 import {DEFAULT_PREFERENCES, MOTION_LEVELS, PAGE_KEY, migratePreferences, sanitizeBackupItems} from './lib/storage';
@@ -77,6 +78,8 @@ export function App({launchedAtLogin}:{launchedAtLogin:boolean}){
 
  // ---- Updates (v0.15) ----
  const updater=useUpdater({ready:boot==='done',auto:prefs.autoUpdate,flushSave,message});
+ // ---- Global hotkey (v0.15.2) ----
+ const hotkey=useHotkey({ready:boot==='done',message});
  const noticePhase=usePresence(updater.noticeVisible,exitDuration(motion,200));const noticeShown=useLatest(updater.noticeVisible?updater.status:null);
  const openReleases=()=>{if(isDesktop())import('@tauri-apps/plugin-opener').then(({openUrl})=>openUrl(RELEASES_URL)).catch(e=>message(errorText(e,'Could not open the browser')));else window.open(RELEASES_URL,'_blank','noopener')};
 
@@ -273,7 +276,7 @@ export function App({launchedAtLogin}:{launchedAtLogin:boolean}){
  const canReorder=!bulkMode&&!query&&!deferredQuery&&page!=='Recent'&&page!=='Settings';
  const renderGrid=(items:Item[],reorderable=true)=>items.length
   ?<FlipGrid ids={items.map(x=>x.id)} motion={motion} className={'app-grid '+(prefs.layout==='list'?'list-layout':'')+' '+(prefs.compact?'compact':'')}>
-   {items.map((item,index)=><Card key={item.id} item={item} index={index} iconSrc={glyphSrc(item)} artSrc={files.artSrcFor(item)} bulkMode={bulkMode} selected={bulkMode&&selectedIds.includes(item.id)} leaving={leaving.has(item.id)} motion={motion} reorderable={reorderable&&canReorder} dragging={reorder.draggingId===item.id} onDragStart={reorder.onDragStart} onNudge={reorder.onNudge} onActivate={run} onToggleSelect={toggleSelect} onFavorite={toggleFavorite} onEdit={startAdd} onRemove={remove} onMenu={openCardMenu}/>)}
+   {items.map((item,index)=><Card key={item.id} item={item} index={index} iconSrc={glyphSrc(item)} artSrc={files.artSrcFor(item)} cardIcons={prefs.cardIcons} bulkMode={bulkMode} selected={bulkMode&&selectedIds.includes(item.id)} leaving={leaving.has(item.id)} motion={motion} reorderable={reorderable&&canReorder} dragging={reorder.draggingId===item.id} onDragStart={reorder.onDragStart} onNudge={reorder.onNudge} onActivate={run} onToggleSelect={toggleSelect} onFavorite={toggleFavorite} onEdit={startAdd} onRemove={remove} onMenu={openCardMenu}/>)}
   </FlipGrid>
   :<div className="empty"><div className="empty-visual"><Layers3 size={30}/></div><h3>Nothing here yet</h3><p>Add a shortcut to an app, folder, or website to start building your workspace.</p><button className="primary" onClick={()=>startAdd()}><Plus size={17}/> Add first shortcut</button></div>;
 
@@ -292,7 +295,7 @@ export function App({launchedAtLogin}:{launchedAtLogin:boolean}){
   scanApps:()=>void scanApps(),scanning,
   iconSummary:(isDesktop()?(iconCache.stats?`${iconCache.stats[0]} icons cached (${formatBytes(iconCache.stats[1])}). `:''):'Available in the desktop app. ')+(iconCache.caching?'Extracting icons now…':'Icons refresh automatically when a program updates.'),
   iconCaching:iconCache.caching,clearIconCache:()=>void iconCache.clear(),
-  openQuickLauncher,libraryCount:db.items.length,
+  openQuickLauncher,hotkey,libraryCount:db.items.length,
   resetAllSettings:()=>ask('Reset all settings?','Every setting returns to its default and the wallpaper is removed. Your shortcuts, icons and card images stay.','Reset settings',async()=>{
    if(prefs.wallpaper)await wallpaper.clear();
    setDb(old=>({...old,preferences:{...DEFAULT_PREFERENCES}}));message('All settings reset to defaults');
@@ -322,7 +325,7 @@ export function App({launchedAtLogin}:{launchedAtLogin:boolean}){
    {noticePhase&&noticeShown&&<UpdateNotice phase={noticePhase} status={noticeShown} onInstall={updater.install} onLater={updater.later}/>}
    {toastPhase&&toastShown&&<Toast key={toastShown.id} phase={toastPhase} toast={toastShown} motion={motion} onDismiss={dismissToast}/>}
   </div>
-  {palettePhase&&<QuickLauncher phase={palettePhase} inputRef={paletteRef} query={paletteQuery} setQuery={setPaletteQuery} index={paletteIndex} setIndex={setPaletteIndex} items={paletteItems} glyphSrc={glyphSrc} onRun={item=>void run(item)} onClose={()=>setPalette(false)} onContextMenu={openPaletteMenu}/>}
+  {palettePhase&&<QuickLauncher phase={palettePhase} inputRef={paletteRef} query={paletteQuery} setQuery={setPaletteQuery} index={paletteIndex} setIndex={setPaletteIndex} items={paletteItems} glyphSrc={glyphSrc} onRun={item=>void run(item)} onClose={()=>setPalette(false)} onContextMenu={openPaletteMenu} hotkey={hotkey.status.active?hotkey.status.shortcut:null}/>}
   {confirmPhase&&confirmShown&&<ConfirmDialog phase={confirmPhase} box={confirmShown} onClose={()=>setConfirmBox(null)}/>}
   <input ref={cardFileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={e=>{void onCardFile(e.target.files?.[0]);e.target.value=''}}/>
   <input ref={iconFileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={e=>{void onIconFile(e.target.files?.[0]);e.target.value=''}}/>
