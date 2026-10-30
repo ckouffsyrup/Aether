@@ -26,7 +26,7 @@ You need [Node.js 20+](https://nodejs.org/), [Rust](https://www.rust-lang.org/to
 In **Command Prompt**:
 
 ```bat
-cd /d C:\Users\Karcen\Documents\Aether
+cd /d C:\Users\YourUser\Documents\Aether
 npm install
 npm run desktop
 ```
