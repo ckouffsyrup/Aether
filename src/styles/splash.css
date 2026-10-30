@@ -1,0 +1,166 @@
+/* Branded startup splash (Motion: Full). */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #0b0b12;
+  overflow: hidden;
+}
+.splash-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 460px;
+  height: 460px;
+  margin: -230px 0 0 -230px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 36%, transparent) 0%, transparent 66%);
+  opacity: 0;
+  transform: scale(0.55);
+  animation: splash-glow 0.7s 0.48s var(--ease-out) forwards;
+}
+.splash-mark {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.splash svg {
+  overflow: visible;
+}
+.splash-stroke,
+.splash-bar {
+  fill: none;
+  stroke: #e3caff;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.splash-stroke {
+  stroke-width: 2.5;
+  animation:
+    splash-draw 0.54s 0.08s cubic-bezier(0.65, 0, 0.35, 1) forwards,
+    splash-stroke-fade 0.3s 0.62s ease-out forwards;
+}
+.splash-bar {
+  stroke-width: 6;
+  animation: splash-draw 0.2s 0.44s ease-out forwards;
+}
+.splash-word {
+  opacity: 0;
+  animation: splash-word 0.38s 0.6s var(--ease-out) forwards;
+  text-align: center;
+}
+.splash-word strong {
+  display: block;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 12px;
+  padding-left: 12px;
+  color: #f2efff;
+}
+.splash-word span {
+  display: block;
+  margin-top: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  padding-left: 4px;
+  color: #8a82a0;
+}
+@keyframes splash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes splash-stroke-fade {
+  to {
+    opacity: 0.2;
+  }
+}
+@keyframes splash-fill {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes splash-glow {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes splash-word {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes splash-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes splash-mark-out {
+  to {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+}
+.splash.phase-dissolve {
+  animation: splash-out 0.32s ease-in forwards;
+  pointer-events: none;
+}
+.splash.phase-dissolve .splash-mark {
+  animation: splash-mark-out 0.32s var(--ease-in) forwards;
+}
+.splash.is-fast,
+.splash.is-fast .splash-mark {
+  animation-duration: 0.17s;
+}
+.splash-bar {
+  stroke-width: 2.5;
+}
+.splash-stroke {
+  stroke-width: 2.5;
+}
+.splash-face {
+  opacity: 0;
+  animation: splash-fill 0.3s ease-out forwards;
+}
+.splash-face.face-left {
+  animation-delay: 0.5s;
+}
+.splash-face.face-right {
+  animation-delay: 0.58s;
+}
+.splash-face.face-base {
+  animation-delay: 0.66s;
+  fill-opacity: 0.42;
+}
+.splash-face.face-counter {
+  animation-delay: 0.76s;
+}
+.splash .splash-stroke {
+  animation:
+    splash-draw 0.54s 0.08s cubic-bezier(0.65, 0, 0.35, 1) forwards,
+    splash-line-out 0.2s 0.66s ease-out forwards;
+}
+.splash .splash-bar {
+  animation:
+    splash-draw 0.3s 0.36s ease-out forwards,
+    splash-line-out 0.2s 0.66s ease-out forwards;
+}
+@keyframes splash-line-out {
+  to {
+    opacity: 0;
+  }
+}

@@ -1,0 +1,45 @@
+/* Auto-hiding accent scrollbars (toggled by src/scrollbars.ts). */
+@property --sb-thumb {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+  background: transparent;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+::-webkit-scrollbar-thumb {
+  min-height: 44px;
+  border: 4px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+  background-color: var(--sb-thumb);
+}
+.is-scrolling,
+.is-scroll-hot {
+  --sb-thumb: color-mix(in srgb, var(--accent, #916cff) 55%, #2c2738);
+}
+.is-scroll-hot::-webkit-scrollbar-thumb {
+  border-width: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  border-width: 3px;
+  background-color: color-mix(in srgb, var(--accent, #916cff) 80%, #2c2738);
+}
+::-webkit-scrollbar-thumb:active {
+  border-width: 3px;
+  background-color: var(--accent, #916cff);
+}
+.shell:not([data-motion="off"]) :is(.main, .side-cats, .quick-items, .editor-body):is(.is-scrolling, .is-scroll-hot) {
+  transition-duration: 0.12s;
+}

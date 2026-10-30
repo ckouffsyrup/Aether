@@ -1,0 +1,361 @@
+/* Shortcut cards, grid/list layouts, reshuffle and drag-to-reorder. */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+}
+.app-grid.compact {
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+}
+.app-card {
+  min-height: 181px;
+  display: flex;
+  flex-direction: column;
+  background: #151520;
+  border: 1px solid #302c3e;
+  border-radius: 14px;
+  padding: 17px;
+  transition:
+    transform 0.16s,
+    border-color 0.16s;
+}
+.app-card:hover {
+  transform: translateY(-2px);
+  border-color: #62537c;
+}
+.card-top,
+.card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.app-glyph {
+  background: color-mix(in srgb, var(--accent) 15%, #1a1727);
+  color: #b8a3fc;
+  border: 1px solid #403455;
+  width: 43px;
+  height: 43px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+}
+.app-glyph svg {
+  width: 21px;
+  height: 21px;
+}
+.app-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-category {
+  color: #817c97;
+  font-size: 11px;
+  margin-top: 4px;
+}
+.card-bottom {
+  margin-top: auto;
+  padding-top: 17px;
+}
+.launch {
+  color: #c4b0fc;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+.actions {
+  display: flex;
+  gap: 1px;
+}
+@media (max-width: 1100px) {
+  .app-grid {
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  }
+}
+.native-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: auto;
+}
+.app-card {
+  border-radius: var(--card-radius, 14px);
+}
+.shell[data-density="compact"] .app-card {
+  min-height: 140px;
+  padding: 11px;
+}
+.shell[data-density="spacious"] .app-card {
+  min-height: 216px;
+  padding: 24px;
+}
+.app-grid.list-layout {
+  display: flex;
+  flex-direction: column;
+}
+.app-grid.list-layout .app-card {
+  min-height: 70px;
+  display: grid;
+  grid-template-columns: 52px minmax(140px, 1fr) 120px 170px;
+  align-items: center;
+  gap: 13px;
+  padding: 10px 17px;
+}
+.app-grid.list-layout .card-top {
+  grid-column: 1;
+  grid-row: 1;
+}
+.app-grid.list-layout .card-top .fave {
+  display: none;
+}
+.app-grid.list-layout .app-title {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+}
+.app-grid.list-layout .app-category {
+  grid-column: 3;
+  grid-row: 1;
+  margin: 0;
+}
+.app-grid.list-layout .card-bottom {
+  grid-column: 4;
+  grid-row: 1;
+  margin: 0;
+  padding: 0;
+}
+@media (max-width: 850px) {
+  .app-grid.list-layout .app-card {
+    grid-template-columns: 52px 1fr 110px;
+  }
+  .app-grid.list-layout .app-category {
+    display: none;
+  }
+  .app-grid.list-layout .card-bottom {
+    grid-column: 3;
+  }
+}
+.shell .app-card {
+  background: var(--card-color, #151520);
+}
+.app-card {
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  outline-offset: 3px;
+}
+.app-card:focus-visible {
+  outline: 2px solid var(--accent);
+}
+.app-card.has-card-image:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 9, 18, 0.16), rgba(10, 9, 18, 0.85)),
+    var(--card-image) center/cover no-repeat;
+  z-index: -1;
+}
+.app-card.has-card-image .app-title,
+.app-card.has-card-image .app-category,
+.app-card.has-card-image .launch {
+  color: #fff;
+  text-shadow: 0 1px 6px #000;
+}
+.app-card.has-card-image .icon-button {
+  background: #17132077;
+  color: #fff;
+}
+@media (max-width: 960px) {
+  .app-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .app-grid {
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  }
+}
+.app-card.has-card-image:before {
+  background-position: center, var(--card-position, 50% 50%);
+  background-size: auto, cover;
+}
+.bulk-checkbox {
+  accent-color: var(--accent);
+  width: 17px;
+  height: 17px;
+  position: relative;
+  z-index: 3;
+}
+.native-icon {
+  pointer-events: none;
+}
+.app-card {
+  transition:
+    transform 0.18s var(--ease-out),
+    border-color 0.18s,
+    box-shadow 0.2s;
+}
+.shell:not([data-motion="off"]) .app-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, #302c3e);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
+    0 16px 32px -20px color-mix(in srgb, var(--accent) 75%, transparent);
+}
+.shell:not([data-motion="off"]) .app-card:active {
+  transform: translateY(-1px) scale(0.985);
+  transition-duration: 0.08s;
+}
+.shell[data-motion="off"] .app-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, #302c3e);
+}
+.app-card .app-glyph {
+  transition: transform 0.22s var(--ease-out);
+}
+.shell[data-motion="full"] .app-card:hover .app-glyph {
+  transform: scale(1.07);
+}
+.app-card.is-selected {
+  border-color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.app-card > * {
+  position: relative;
+  z-index: 1;
+}
+.app-card > .card-ripple {
+  position: absolute;
+  z-index: 0;
+}
+.shell[data-motion="full"] .app-card {
+  animation: card-in 0.42s var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 32ms);
+}
+.shell[data-motion="subtle"] .app-card {
+  animation: fade-in 0.2s ease-out backwards;
+}
+.shell[data-motion="full"] .app-card.is-leaving {
+  animation: card-out 0.2s var(--ease-in) forwards !important;
+  pointer-events: none;
+}
+.shell[data-motion="subtle"] .app-card.is-leaving {
+  animation: fade-out 0.14s ease-in forwards !important;
+  pointer-events: none;
+}
+.card-ripple {
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 42%, transparent);
+  pointer-events: none;
+  animation: ripple 0.62s var(--ease-out) forwards;
+}
+.shell[data-motion="full"] .app-card.is-launching .app-glyph {
+  animation: glyph-bounce 0.5s var(--ease-out);
+}
+.icon-button.fave {
+  position: relative;
+  overflow: visible;
+}
+.shell[data-motion="full"] .star-pop {
+  animation: star-pop 0.46s var(--ease-pop);
+}
+.star-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px;
+  border-radius: 50%;
+  pointer-events: none;
+  color: var(--accent);
+  box-shadow:
+    0 -12px 0 currentColor,
+    9px -9px 0 currentColor,
+    12px 0 0 currentColor,
+    9px 9px 0 currentColor,
+    0 12px 0 currentColor,
+    -9px 9px 0 currentColor,
+    -12px 0 0 currentColor,
+    -9px -9px 0 currentColor;
+  animation: star-burst 0.5s var(--ease-out) forwards;
+}
+.shell[data-motion="subtle"][data-boot="arrive"] .app-card {
+  animation: card-in 0.3s var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 22ms);
+}
+.app-grid {
+  position: relative;
+}
+.app-card {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.flip-exit {
+  animation: none !important;
+  transition: none !important;
+  z-index: 0;
+}
+.flip-exit .card-ripple,
+.flip-exit .star-burst {
+  display: none;
+}
+.app-card.is-drag-source {
+  border-style: dashed !important;
+  border-color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.app-card.is-drag-source::before {
+  opacity: 0;
+}
+.app-card.is-drag-source > * {
+  visibility: hidden;
+}
+.drag-ghost {
+  position: fixed;
+  z-index: 70;
+  pointer-events: none;
+  will-change: transform;
+}
+.drag-ghost > .app-card {
+  animation: none !important;
+  margin: 0;
+  transform-origin: 50% 40%;
+  transition:
+    transform 0.16s var(--ease-out),
+    box-shadow 0.16s ease-out;
+}
+.drag-ghost.is-lifted > .app-card {
+  transform: scale(1.045) !important;
+  border-color: var(--accent) !important;
+  box-shadow:
+    0 26px 50px -18px #000d,
+    0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent) !important;
+}
+.shell[data-motion="full"] .drag-ghost.is-lifted > .app-card {
+  transform: scale(1.05) rotate(-1.5deg) !important;
+}
+html.is-reordering,
+html.is-reordering * {
+  cursor: grabbing !important;
+}
+html.is-reordering .app-card:not(.is-drag-source):hover {
+  transform: none;
+}
+.drag-ghost > .app-card {
+  background: var(--card-color, #151520) !important;
+}

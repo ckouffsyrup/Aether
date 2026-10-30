@@ -1,0 +1,185 @@
+/* Motion levels (data-motion = off | subtle | full), startup arrival (data-boot) and shared keyframes. */
+.shell[data-motion="off"] *,
+.shell[data-motion="off"] *::before,
+.shell[data-motion="off"] *::after {
+  transition: none !important;
+  animation: none !important;
+}
+.shell[data-motion="off"] {
+  animation: none;
+}
+.shell[data-motion="off"] * {
+  transition: none !important;
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes card-out {
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes ripple {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(30);
+    opacity: 0;
+  }
+}
+@keyframes glyph-bounce {
+  0% {
+    transform: scale(1);
+  }
+  28% {
+    transform: scale(0.84);
+  }
+  62% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes star-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.42) rotate(-14deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes star-burst {
+  from {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+@keyframes panel-out {
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+}
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes toast-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+@keyframes menu-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@keyframes arrive-side {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+@keyframes arrive-top {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+@keyframes arrive-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@keyframes md-fade {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(4px);
+  }
+  40%,
+  70% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes md-bounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(-9px) scale(1.06);
+  }
+  55% {
+    transform: translateY(2px) scale(0.97);
+  }
+}
+@keyframes md-ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(9);
+  }
+}

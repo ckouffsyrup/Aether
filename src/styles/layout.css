@@ -1,0 +1,353 @@
+/* App shell: sidebar, toolbar, main area, scaling and density. */
+.sidebar {
+  width: 256px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0e0e17;
+  border-right: 1px solid #242332;
+  padding: 27px 15px 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px 41px;
+}
+.brand img {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+.brand strong {
+  font-family: "Space Grotesk";
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+.brand span {
+  display: block;
+  color: #75738a;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-top: 2px;
+}
+.side-label {
+  color: #6b697e;
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  margin: 0 12px 13px;
+}
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  text-align: left;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #a29eb5;
+  font-size: 13px;
+  font-weight: 700;
+}
+.nav-item:hover,
+.catnav:hover {
+  background: #1b1a29;
+  color: white;
+}
+.nav-item.chosen {
+  color: #e5dcff;
+  background: color-mix(in srgb, var(--accent) 16%, #141321);
+}
+.nav-item.chosen svg {
+  color: var(--accent);
+}
+.nav-item small {
+  margin-left: auto;
+  color: #9983db;
+}
+.side-cats {
+  overflow-y: auto;
+}
+.catnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: #8b899e;
+  border-radius: 9px;
+  padding: 10px 13px;
+  font-size: 12px;
+}
+.catnav.selected {
+  color: #ddd1ff;
+  background: #1b1929;
+}
+.catnav span {
+  color: #646278;
+}
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 15px;
+}
+.studio {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 18px 12px 5px;
+  margin-top: 9px;
+  border-top: 1px solid #22212d;
+}
+.studio img {
+  height: 34px;
+  width: 34px;
+  border-radius: 9px;
+}
+.studio b {
+  display: block;
+  font-size: 12px;
+}
+.studio span {
+  display: block;
+  font-size: 10px;
+  color: #79768b;
+  margin-top: 3px;
+}
+.toolbar {
+  height: 83px;
+  border-bottom: 1px solid #211f30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 45px;
+  gap: 16px;
+}
+.breadcrumbs {
+  color: #818096;
+  font-size: 12px;
+}
+.breadcrumbs span {
+  padding: 0 10px;
+  color: #565269;
+}
+.breadcrumbs b {
+  color: #e9e7f0;
+}
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+@media (max-width: 1100px) {
+  .sidebar {
+    width: 220px;
+  }
+  .toolbar {
+    padding: 0 28px;
+  }
+}
+@media (max-width: 720px) {
+  .sidebar {
+    width: 66px;
+    padding: 18px 7px;
+  }
+  .brand {
+    padding: 0 7px 30px;
+  }
+  .brand > div,
+  .side-label,
+  .side-cats,
+  .nav-item span,
+  .nav-item small,
+  .studio div {
+    display: none;
+  }
+  .nav-item {
+    justify-content: center;
+  }
+  .studio {
+    padding: 14px 6px;
+  }
+  .toolbar {
+    padding: 0 15px;
+    height: 68px;
+  }
+}
+.scan-button {
+  white-space: nowrap;
+}
+@media (max-width: 820px) {
+  .scan-button {
+    font-size: 0;
+    gap: 0;
+  }
+  .scan-button svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+.shell > .sidebar,
+.shell > .main {
+  position: relative;
+  z-index: 1;
+}
+.shell .sidebar {
+  background: var(--sidebar-color, #11101b);
+  width: var(--sidebar-width, 254px);
+}
+.sidebar-toggle {
+  align-self: flex-end;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  color: #b6a9d5;
+  border: 1px solid #363045;
+  border-radius: 9px;
+  padding: 7px;
+  margin: -13px 0 15px;
+}
+.categories-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: 0;
+  color: #77718c;
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  margin: 24px 0 12px;
+  padding: 3px 12px;
+}
+.shell[data-sidebar-collapsed="true"] .sidebar {
+  width: 72px !important;
+  padding: 20px 8px 12px;
+}
+.shell[data-sidebar-collapsed="true"] .brand {
+  justify-content: center;
+  padding: 6px 0 24px;
+}
+.shell[data-sidebar-collapsed="true"] .brand > div,
+.shell[data-sidebar-collapsed="true"] .side-label,
+.shell[data-sidebar-collapsed="true"] .categories-heading,
+.shell[data-sidebar-collapsed="true"] .side-cats,
+.shell[data-sidebar-collapsed="true"] .nav-item span,
+.shell[data-sidebar-collapsed="true"] .nav-item small,
+.shell[data-sidebar-collapsed="true"] .studio div {
+  display: none;
+}
+.shell[data-sidebar-collapsed="true"] .nav-item {
+  justify-content: center;
+  padding: 14px 6px;
+  font-size: 0;
+}
+.shell[data-sidebar-collapsed="true"] .studio {
+  justify-content: center;
+  padding: 16px 0 4px;
+}
+.shell[data-sidebar-collapsed="true"] .sidebar-toggle {
+  align-self: center;
+  margin: 0 0 12px;
+}
+@media (max-width: 960px) {
+  .toolbar {
+    padding: 0 18px;
+  }
+}
+@media (max-width: 650px) {
+  .shell .sidebar {
+    width: 72px !important;
+    padding: 15px 7px;
+  }
+  .shell .brand > div,
+  .shell .side-label,
+  .shell .categories-heading,
+  .shell .side-cats,
+  .shell .nav-item span,
+  .shell .nav-item small,
+  .shell .studio div {
+    display: none;
+  }
+  .shell .nav-item {
+    justify-content: center;
+    font-size: 0;
+  }
+  .toolbar {
+    gap: 5px;
+  }
+  .breadcrumbs {
+    display: none;
+  }
+  .toolbar-right {
+    margin-left: auto;
+  }
+}
+.shell > .sidebar {
+  position: relative !important;
+  top: auto !important;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.sidebar .side-cats {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.sidebar .sidebar-bottom {
+  flex-shrink: 0;
+}
+@media (max-width: 900px) {
+  .toolbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 70px;
+    padding: 12px 20px;
+  }
+  .toolbar-right {
+    flex-wrap: wrap;
+  }
+}
+.nav-item,
+.catnav {
+  white-space: nowrap;
+}
+.shell:not([data-motion="off"]) .sidebar {
+  transition:
+    width 0.24s var(--ease-out),
+    padding 0.24s var(--ease-out);
+}
+.shell[data-boot="splash"] .sidebar,
+.shell[data-boot="arrive"] .sidebar {
+  animation: arrive-side 0.5s var(--ease-out) backwards;
+}
+.shell[data-boot="splash"] .toolbar,
+.shell[data-boot="arrive"] .toolbar {
+  animation: arrive-top 0.45s var(--ease-out) 0.06s backwards;
+}
+.shell[data-motion="subtle"][data-boot="arrive"] .sidebar {
+  animation-duration: 0.34s;
+}
+.shell[data-motion="subtle"][data-boot="arrive"] .toolbar,
+.shell[data-motion="subtle"][data-boot="arrive"] .content > * {
+  animation-duration: 0.32s;
+}
+.shell[data-boot="splash"] .sidebar,
+.shell[data-boot="splash"] .toolbar,
+.shell[data-boot="splash"] .content,
+.shell[data-boot="splash"] .content > *,
+.shell[data-boot="splash"] .app-card {
+  animation-play-state: paused;
+}
