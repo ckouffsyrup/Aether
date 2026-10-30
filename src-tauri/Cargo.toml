@@ -1,6 +1,6 @@
 [package]
 name = "aether"
-version = "0.15.0"
+version = "0.15.1"
 description = "Aether desktop hub by Veyl Studios"
 authors = ["Veyl Studios"]
 edition = "2021"

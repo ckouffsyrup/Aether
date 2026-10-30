@@ -104,7 +104,7 @@ Releases are built by GitHub Actions (`.github/workflows/release.yml`) when you 
 
 1. In Command Prompt:
    ```bat
-   cd /d C:\Users\Karcen\Documents\Aether
+   cd /d C:\Users\YourUser\Documents\Aether
    npm install
    npm run setup-signing
    ```
@@ -123,7 +123,7 @@ Releases are built by GitHub Actions (`.github/workflows/release.yml`) when you 
 ### Every release
 
 ```bat
-cd /d C:\Users\Karcen\Documents\Aether
+cd /d C:\Users\YourUser\Documents\Aether
 npm run bump 0.15.1
 ```
 Add a `## v0.15.1 — Title — date` section at the top of `docs/CHANGELOG.md` (it becomes the release notes shown in the app), then:
