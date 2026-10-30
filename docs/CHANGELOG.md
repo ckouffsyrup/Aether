@@ -2,6 +2,9 @@
 
 Newest first. Entries are numbered continuously across versions (the numbers are referenced in code comments and discussions). "Validation" notes record how each change was checked.
 
+## v0.15.1 — Test update — 2026-10-30
+- **124 — Test release:** checking that installed copies update themselves.
+
 ## v0.15.0 — Updates and installer — 2026-10-30
 - **117 — Automatic updates:** Aether checks GitHub Releases when it starts and every six hours (Settings → About → "Check for updates automatically"). Updates are signed; Aether refuses any update that isn't signed with the Veyl Studios key.
 - **118 — Update notice:** when a new version is ready, a card in the bottom-right corner offers What's new, Later and Restart now. Restart downloads the update with a progress bar, saves your library, then the installer closes Aether, installs quietly and reopens it. "Aether updated to vX" shows once afterwards.
