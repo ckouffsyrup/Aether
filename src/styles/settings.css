@@ -668,3 +668,23 @@ button.s-group-title:hover {
     gap: 12px;
   }
 }
+/* v0.15: release notes under About → Updates. */
+.s-notes b {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.s-notes ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #b9b2cc;
+}
+.s-notes li + li {
+  margin-top: 3px;
+}
+.s-notes li.plain {
+  list-style: none;
+  margin-left: -18px;
+}

@@ -11,7 +11,7 @@ export const MOTION_LEVELS:MotionLevel[]=['off','subtle','full'];
 /** File names Aether generates for card art / custom icons. */
 export const CARD_FILE=/^[A-Za-z0-9.-]{1,120}$/;
 
-export const DEFAULT_PREFERENCES:Preferences={accent:'#916cff',compact:false,greeting:true,startWithWindows:false,layout:'grid',density:'comfortable',radius:14,scale:100,motion:true,motionLevel:'full',startHidden:true,wallpaper:'',wallpaperOpacity:20,sort:'name',sidebarColor:'#11101b',panelColor:'#151520',cardColor:'#151520',textColor:'#f2efff',sidebarWidth:254,sidebarCollapsed:false,categoriesMode:'show',heroOpacity:35};
+export const DEFAULT_PREFERENCES:Preferences={accent:'#916cff',compact:false,greeting:true,startWithWindows:false,layout:'grid',density:'comfortable',radius:14,scale:100,motion:true,motionLevel:'full',startHidden:true,autoUpdate:true,wallpaper:'',wallpaperOpacity:20,sort:'name',sidebarColor:'#11101b',panelColor:'#151520',cardColor:'#151520',textColor:'#f2efff',sidebarWidth:254,sidebarCollapsed:false,categoriesMode:'show',heroOpacity:35};
 export const DEFAULT_DATABASE:Database={items:[],preferences:DEFAULT_PREFERENCES};
 
 /** Merge stored preferences over the defaults, migrating older formats. */

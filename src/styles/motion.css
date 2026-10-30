@@ -183,3 +183,15 @@
     transform: scale(9);
   }
 }
+/* v0.15: busy icons (Checking…, Updating…). */
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+.shell[data-motion="off"] .spin {
+  animation: none;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

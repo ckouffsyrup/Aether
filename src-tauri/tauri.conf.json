@@ -35,13 +35,39 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": [
+      "nsis"
+    ],
+    "createUpdaterArtifacts": true,
+    "publisher": "Veyl Studios",
+    "copyright": "© 2026 Veyl Studios. All rights reserved.",
+    "category": "Utility",
+    "shortDescription": "Desktop hub for your apps, games, folders and websites",
+    "longDescription": "Aether is a Windows desktop hub by Veyl Studios for launching your apps, games, folders and websites.",
+    "homepage": "https://github.com/ckouffsyrup/Aether",
     "icon": [
       "icons/icon.png",
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcwMEVGQjQzRkFCMTM5RjMKUldUek9iSDZRL3NPY0VTUmxhZ2x2eml2RmExaWFSMVRXREZGWjVPMkw3OVZTNnVBRE1FbnRkcS8K",
+      "endpoints": [
+        "https://github.com/ckouffsyrup/Aether/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

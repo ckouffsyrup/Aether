@@ -1,6 +1,8 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {AlertTriangle, Check, Download, FolderOpen, HardDrive, Image as ImageIcon, Info, Keyboard, LayoutGrid, Monitor, Palette, RotateCcw, Save, ScanSearch, Search, Sparkles, Trash2, Upload, X} from 'lucide-react';
+import {AlertTriangle, Check, Download, ExternalLink, FolderOpen, HardDrive, Image as ImageIcon, Info, Keyboard, LayoutGrid, Monitor, Palette, RefreshCw, RotateCcw, Save, ScanSearch, Search, Sparkles, Trash2, Upload, X} from 'lucide-react';
 import {APP_VERSION, isDesktop, type MotionLevel, type Preferences} from './shared';
+import type {UpdateStatus} from './hooks/useUpdater';
+import {releaseNoteLines, timeAgo} from './lib/updates';
 
 /**
  * v0.14 Settings: two-pane layout (section list + one section at a time),
@@ -15,7 +17,7 @@ const SECTIONS:{id:SectionId;label:string;icon:React.ReactNode;hint:string}[]=[
  {id:'library',label:'Library',icon:<LayoutGrid size={17}/>,hint:'Sorting, layout, sidebar'},
  {id:'desktop',label:'Desktop',icon:<Monitor size={17}/>,hint:'Startup, tray, hotkey'},
  {id:'data',label:'Data',icon:<HardDrive size={17}/>,hint:'Backups, apps, icons'},
- {id:'about',label:'About',icon:<Info size={17}/>,hint:'Version and storage'},
+ {id:'about',label:'About',icon:<Info size={17}/>,hint:'Version, updates, storage'},
 ];
 const SECTION_KEY='veyl.aether.settingsSection';
 
@@ -33,7 +35,23 @@ export type SettingsApi={
  openQuickLauncher:()=>void;
  resetAllSettings:()=>void;clearLibrary:()=>void;libraryCount:number;
  dataFolder:string;openDataFolder:()=>void;
+ updates:{status:UpdateStatus;lastChecked:number|null;check:()=>void;install:()=>void;openReleases:()=>void};
 };
+
+/** One line for Settings → About → Updates. */
+function updateSummary(s:UpdateStatus,lastChecked:number|null):string{
+ const checked=lastChecked?` Checked ${timeAgo(lastChecked)}.`:'';
+ switch(s.kind){
+  case 'unsupported':return s.reason==='browser'?'Available in the desktop app.':'Not set up in this build yet (see Releasing in the README).';
+  case 'idle':return `You're on v${APP_VERSION}.`+(checked||' Not checked yet this session.');
+  case 'checking':return 'Checking GitHub for a new version…';
+  case 'current':return `You're on the latest version (v${APP_VERSION}).`+checked;
+  case 'available':return `Version ${s.version} is ready to install. You're on v${APP_VERSION}.`;
+  case 'downloading':return `Downloading v${s.version}…`+(s.progress===null?'':` ${Math.round(s.progress*100)}%`);
+  case 'installing':return 'Installing. Aether will close and reopen in a moment.';
+  case 'error':return s.message;
+ }
+}
 
 // ---------------- Controls ----------------
 function Toggle({checked,onChange,disabled,label}:{checked:boolean;onChange:(v:boolean)=>void;disabled?:boolean;label:string}){
@@ -123,7 +141,16 @@ export function SettingsPage({api}:{api:SettingsApi}){
   {id:'resetAll',section:'data',danger:true,title:'Reset all settings',desc:'Every setting goes back to default and the wallpaper is removed. Your shortcuts stay.',keywords:'reset defaults danger',control:<button type="button" className="danger-ghost" onClick={api.resetAllSettings}><RotateCcw size={15}/> Reset</button>},
   {id:'clearLibrary',section:'data',danger:true,title:'Clear library',desc:`Removes all ${api.libraryCount} shortcuts with their icons and card images. Programs and files on your PC are not touched. Export a backup first.`,keywords:'delete remove all clear danger wipe',control:<button type="button" className="danger-ghost" disabled={!api.libraryCount} onClick={api.clearLibrary}><Trash2 size={15}/> Clear</button>},
   // ---- About ----
-  {id:'about',section:'about',title:'Aether',keywords:'version veyl about',block:<div className="s-about"><img src="/aether.svg" alt=""/><div><b>Aether</b><span>Version {APP_VERSION} · A Veyl Studios project</span><span>Windows-first desktop hub. Automatic updates are planned.</span></div></div>},
+  {id:'about',section:'about',title:'Aether',keywords:'version veyl about',block:<div className="s-about"><img src="/aether.svg" alt=""/><div><b>Aether</b><span>Version {APP_VERSION} · A Veyl Studios project</span><span>Windows-first desktop hub.</span></div></div>},
+  {id:'updates',section:'about',title:'Updates',desc:updateSummary(api.updates.status,api.updates.lastChecked),keywords:'update upgrade new version check download install',control:(()=>{
+   const s=api.updates.status;
+   if(s.kind==='available'||(s.kind==='error'&&s.version))return <button type="button" className="primary small" onClick={api.updates.install}><Download size={15}/> Restart to update</button>;
+   if(s.kind==='downloading'||s.kind==='installing')return <button type="button" className="secondary" disabled><RefreshCw size={15} className="spin"/> Updating…</button>;
+   return <button type="button" className="secondary" disabled={s.kind==='unsupported'||s.kind==='checking'} onClick={api.updates.check}><RefreshCw size={15} className={s.kind==='checking'?'spin':undefined}/> {s.kind==='checking'?'Checking…':'Check for updates'}</button>;
+  })()},
+  ...((s=>{const v='version' in s?s.version:undefined;const notes=v&&'notes' in s?releaseNoteLines(s.notes,20):[];return v&&notes.length?[{id:'updateNotes',section:'about' as SectionId,title:`What's new in v${v}`,keywords:'release notes changelog',block:<div className="s-notes"><b>What's new in v{v}</b><ul>{notes.map((n,i)=><li key={i} className={n.bullet?'':'plain'}>{n.text}</li>)}</ul></div>}]:[]})(api.updates.status)),
+  {id:'autoUpdate',section:'about',title:'Check for updates automatically',desc:'When Aether starts and every few hours. Nothing installs until you choose Restart.',keywords:'update automatic background check',control:<Toggle label="Check for updates automatically" disabled={!isDesktop()} checked={p.autoUpdate} onChange={v=>api.setPref('autoUpdate',v)}/>},
+  {id:'releases',section:'about',title:'Release notes',desc:'What changed in every version, on GitHub.',keywords:'changelog whats new release notes github history',control:<button type="button" className="secondary" onClick={api.updates.openReleases}><ExternalLink size={15}/> View releases</button>},
   {id:'folder',section:'about',title:'Where your data lives',desc:api.dataFolder||'Aether keeps shortcuts in its webview storage, and images and icons in its app-data folder.',keywords:'folder appdata storage location files',control:<button type="button" className="secondary" disabled={!isDesktop()} onClick={api.openDataFolder}><FolderOpen size={15}/> Open folder</button>},
  ],[api,p]);
 

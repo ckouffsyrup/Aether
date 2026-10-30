@@ -5,6 +5,7 @@ mod discovery;
 mod icons;
 mod launch;
 mod storage;
+mod updates;
 mod util;
 
 use std::time::Duration;
@@ -18,7 +19,8 @@ use tauri_plugin_window_state::StateFlags;
 const AUTOSTART_FLAG: &str = "--autostart";
 
 fn launched_at_login() -> bool {
-    std::env::args().any(|a| a == AUTOSTART_FLAG)
+    // The restart after an update keeps the old arguments; show the window anyway.
+    std::env::args().any(|a| a == AUTOSTART_FLAG) && !updates::resumed_after_update()
 }
 
 /// UI asks this before its first render to decide whether to stay in the tray.
@@ -44,6 +46,8 @@ pub fn run() {
             show_main(app)
         }))
         .plugin(tauri_plugin_opener::init())
+        // Signed updates from GitHub Releases (endpoint and public key in tauri.conf.json).
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         // Window starts hidden and the UI shows it after first paint (no white
         // flash, startup animation begins on frame one), so don't restore visibility.
@@ -69,6 +73,7 @@ pub fn run() {
                 .build(),
         )
         .setup(|app| {
+            updates::take_restart_marker(app.handle());
             // Non-fatal: if another program already owns the hotkey, Aether still starts.
             if let Err(e) = app.global_shortcut().register("Ctrl+Alt+Space") {
                 eprintln!("Aether: could not register Ctrl+Alt+Space: {e}");
@@ -148,6 +153,8 @@ pub fn run() {
             storage::read_image_file,
             storage::app_data_folder,
             storage::open_app_data_folder,
+            updates::updates_configured,
+            updates::prepare_update_restart,
             launch_context
         ])
         .run(tauri::generate_context!())

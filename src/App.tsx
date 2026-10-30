@@ -12,26 +12,28 @@ import {installAutoHideScrollbars} from './scrollbars';
 import {Sidebar} from './components/Sidebar';
 import {Toolbar} from './components/Toolbar';
 import {HomePage, LibraryPage} from './components/Pages';
-import {ConfirmDialog, QuickLauncher, Toast, type ConfirmBox} from './components/Overlays';
+import {ConfirmDialog, QuickLauncher, Toast, UpdateNotice, type ConfirmBox} from './components/Overlays';
 import {useToast} from './hooks/useToast';
 import {useDatabase} from './hooks/useDatabase';
 import {useWallpaper} from './hooks/useWallpaper';
 import {useLibraryFiles} from './hooks/useLibraryFiles';
 import {useIconCache} from './hooks/useIconCache';
 import {useReorder} from './hooks/useReorder';
+import {useUpdater} from './hooks/useUpdater';
 import {errorText, launch, native} from './lib/native';
 import {blobToDataUrl, formatBytes, mimeForFile, prepareCardImage, readIconFile} from './lib/images';
 import {DEFAULT_PREFERENCES, MOTION_LEVELS, PAGE_KEY, migratePreferences, sanitizeBackupItems} from './lib/storage';
 import {guessCategory, normalizeTarget, parseLegacy, sanitizeTheme} from './lib/importers';
 import {quickLauncherResults, sortItems} from './lib/order';
 import {itemMenu, selectionMenu, wrapEntries, type MenuActions} from './lib/menus';
+import {RELEASES_URL} from './lib/updates';
 
 type MenuState={x:number;y:number;entries:MenuEntry[];opener:HTMLElement|null};
 const reducedMotionNow=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function App({launchedAtLogin}:{launchedAtLogin:boolean}){
  const {toast,message,dismiss:dismissToast}=useToast();
- const {db,setDb,dbRef,setPref,setPrefs}=useDatabase(()=>message('Aether storage is full. Export a backup and remove large custom icons.'));
+ const {db,setDb,dbRef,setPref,setPrefs,flush:flushSave}=useDatabase(()=>message('Aether storage is full. Export a backup and remove large custom icons.'));
  const prefs=db.preferences;
  const motion=useMotionLevel(prefs.motionLevel);
 
@@ -72,6 +74,11 @@ export function App({launchedAtLogin}:{launchedAtLogin:boolean}){
  const confirmPhase=usePresence(confirmBox!==null,exitDuration(motion,150));const confirmShown=useLatest(confirmBox);
  const menuPhase=usePresence(menu!==null,exitDuration(motion,110,90));const menuShown=useLatest(menu);
  const toastPhase=usePresence(toast!==null,exitDuration(motion,200));const toastShown=useLatest(toast);
+
+ // ---- Updates (v0.15) ----
+ const updater=useUpdater({ready:boot==='done',auto:prefs.autoUpdate,flushSave,message});
+ const noticePhase=usePresence(updater.noticeVisible,exitDuration(motion,200));const noticeShown=useLatest(updater.noticeVisible?updater.status:null);
+ const openReleases=()=>{if(isDesktop())import('@tauri-apps/plugin-opener').then(({openUrl})=>openUrl(RELEASES_URL)).catch(e=>message(errorText(e,'Could not open the browser')));else window.open(RELEASES_URL,'_blank','noopener')};
 
  // ---- Files, icons, wallpaper ----
  const wallpaper=useWallpaper(prefs.wallpaper,setPref,message);
@@ -296,6 +303,7 @@ export function App({launchedAtLogin}:{launchedAtLogin:boolean}){
    message('Library cleared');
   },true),
   dataFolder,openDataFolder:()=>{native('open_app_data_folder').catch(e=>message(errorText(e,'Could not open the folder')))},
+  updates:{status:updater.status,lastChecked:updater.lastChecked,check:updater.check,install:updater.install,openReleases},
  };
 
  const shellStyle={'--accent':prefs.accent,'--sidebar-color':prefs.sidebarColor,'--panel-color':prefs.panelColor,'--card-color':prefs.cardColor,'--text-color':prefs.textColor,'--sidebar-width':`${prefs.sidebarWidth}px`,'--card-radius':`${prefs.radius}px`,'--ui-scale':prefs.scale/100,'--wallpaper-opacity':prefs.wallpaperOpacity/100,'--hero-opacity':prefs.heroOpacity/100,'--wallpaper-image':wallpaper.cssImage} as React.CSSProperties;
@@ -310,7 +318,10 @@ export function App({launchedAtLogin}:{launchedAtLogin:boolean}){
     :<LibraryPage page={page} visible={visible} query={query} setQuery={setQuery} searchRef={searchRef} category={category} setCategory={setCategory} bulkMode={bulkMode} toggleBulk={()=>{setBulkMode(v=>!v);setSelectedIds([])}} selectedIds={selectedIds} setSelectedIds={setSelectedIds} moveTo={moveTo} setFavorites={setFavorites} removeMany={removeMany} renderGrid={renderGrid}/>}
    </div>
   </main>
-  {toastPhase&&toastShown&&<Toast key={toastShown.id} phase={toastPhase} toast={toastShown} motion={motion} onDismiss={dismissToast}/>}
+  <div className="corner-stack">
+   {noticePhase&&noticeShown&&<UpdateNotice phase={noticePhase} status={noticeShown} onInstall={updater.install} onLater={updater.later}/>}
+   {toastPhase&&toastShown&&<Toast key={toastShown.id} phase={toastPhase} toast={toastShown} motion={motion} onDismiss={dismissToast}/>}
+  </div>
   {palettePhase&&<QuickLauncher phase={palettePhase} inputRef={paletteRef} query={paletteQuery} setQuery={setPaletteQuery} index={paletteIndex} setIndex={setPaletteIndex} items={paletteItems} glyphSrc={glyphSrc} onRun={item=>void run(item)} onClose={()=>setPalette(false)} onContextMenu={openPaletteMenu}/>}
   {confirmPhase&&confirmShown&&<ConfirmDialog phase={confirmPhase} box={confirmShown} onClose={()=>setConfirmBox(null)}/>}
   <input ref={cardFileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={e=>{void onCardFile(e.target.files?.[0]);e.target.value=''}}/>

@@ -12,6 +12,7 @@
     "global-shortcut:default",
     "autostart:default",
     "window-state:default",
+    "updater:default",
     "core:window:allow-show",
     "core:window:allow-set-focus"
   ]

@@ -2,6 +2,16 @@
 
 Newest first. Entries are numbered continuously across versions (the numbers are referenced in code comments and discussions). "Validation" notes record how each change was checked.
 
+## v0.15.0 — Updates and installer — 2026-10-30
+- **117 — Automatic updates:** Aether checks GitHub Releases when it starts and every six hours (Settings → About → "Check for updates automatically"). Updates are signed; Aether refuses any update that isn't signed with the Veyl Studios key.
+- **118 — Update notice:** when a new version is ready, a card in the bottom-right corner offers What's new, Later and Restart now. Restart downloads the update with a progress bar, saves your library, then the installer closes Aether, installs quietly and reopens it. "Aether updated to vX" shows once afterwards.
+- **119 — Settings → About:** current version, update status with "Check for updates" (or "Restart to update"), the new version's notes, the automatic-check toggle and a View releases link.
+- **120 — Installer:** a per-user Windows installer (no admin prompt) with Start Menu entry, uninstall entry, Prism icon and Veyl Studios as publisher. Uninstalling keeps your library unless you tick "Delete the application data".
+- **121 — Release builds:** pushing a version tag runs GitHub Actions: unit tests, a version/signing/changelog check, then a clean Windows build that publishes the release with the installer, signatures and `latest.json`. This changelog section becomes the release notes.
+- **122 — Tooling:** `npm run bump 0.15.1` sets the version everywhere at once; `npm run setup-signing` creates the signing key and saves its public half; `npm run desktop:build` makes a local test installer without needing the key.
+- **123 — Sign-in launches after an update:** the restart after an update always opens the window, even if Aether was started hidden at sign-in.
+- **Validation:** typecheck clean; 35 unit tests pass (new: release notes cleanup, time-ago text, version comparison). In a headless browser with a mocked updater: automatic check, notice states (ready, downloading with progress, installing, failed and retry), Later, What's new, every About state, and the corner stack with toasts. Release scripts run against copies of the real files. Rust module compiled against mocks. The four earlier interaction suites give the same results as v0.14.1 (only the About page row count changed, as expected).
+
 ## v0.14.1 — Housekeeping — 2026-10-30
 No visible changes; verified pixel-identical (25 screens) and behavior-identical (4 interaction suites) against v0.14.0.
 - **110 — Frontend split:** `main.tsx` (≈68 KB) is now a 10-line entry point. `App.tsx` composes the app; new folders: `components/` (Sidebar, Toolbar, Pages, Overlays), `hooks/` (database, toast, wallpaper, library files, icon cache, reorder), `lib/` (storage and migrations, Rust command wrappers, image prep, importers, ordering, menus).

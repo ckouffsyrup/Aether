@@ -20,6 +20,8 @@ export type Preferences={accent:string;compact:boolean;greeting:boolean;startWit
  motion:boolean;motionLevel:MotionLevel;
  /** When Windows starts Aether at sign-in, stay in the tray instead of opening. */
  startHidden:boolean;
+ /** v0.15: look for updates at launch and every few hours (installing always waits for the user). */
+ autoUpdate:boolean;
  wallpaper:string;wallpaperOpacity:number;sort:'name'|'recent'|'favorites'|'most-used'|'custom';sidebarColor:string;panelColor:string;cardColor:string;textColor:string;sidebarWidth:number;sidebarCollapsed:boolean;categoriesMode:'show'|'collapse'|'hide';heroOpacity:number;};
 
 

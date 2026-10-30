@@ -1,7 +1,9 @@
-import React from 'react';
-import {AlertTriangle, Info, Search, X} from 'lucide-react';
+import React, {useState} from 'react';
+import {AlertTriangle, ArrowDownToLine, Info, Search, X} from 'lucide-react';
 import {categoryIcon, type Item, type MotionLevel} from '../shared';
 import type {ToastState} from '../hooks/useToast';
+import type {UpdateStatus} from '../hooks/useUpdater';
+import {releaseNoteLines} from '../lib/updates';
 
 export type ConfirmBox={heading:string;body:string;action:string;danger?:boolean;accept:()=>void};
 
@@ -49,5 +51,35 @@ export function QuickLauncher({phase,inputRef,query,setQuery,index,setIndex,item
    </button>}):<p>No matching shortcuts. Add one from your library.</p>}</div>
    <div className="quick-footer">CTRL + K in Aether · CTRL + ALT + SPACE system-wide · ↑ ↓ to select · Enter to launch · Right-click for more</div>
   </div>
+ </div>;
+}
+
+/** v0.15: bottom-right card when an update is ready, downloading, installing or failed. */
+export function UpdateNotice({phase,status,onInstall,onLater}:{phase:'in'|'out';status:UpdateStatus;onInstall:()=>void;onLater:()=>void}){
+ const [notesOpen,setNotesOpen]=useState(false);
+ if(status.kind!=='available'&&status.kind!=='downloading'&&status.kind!=='installing'&&status.kind!=='error')return null;
+ const version=status.version;if(!version)return null;
+ const notes=releaseNoteLines(status.notes);
+ const pct=status.kind==='downloading'&&status.progress!==null?Math.round(status.progress*100):null;
+ const [title,detail]=
+  status.kind==='available'?[`Aether v${version} is ready`,'Restart to install. Your library and settings stay as they are.']
+  :status.kind==='downloading'?[`Downloading v${version}`,pct===null?'Starting download…':`${pct}%`]
+  :status.kind==='installing'?[`Installing v${version}`,'Aether will close and reopen in a moment.']
+  :['Update failed',status.message];
+ const canAct=status.kind==='available'||status.kind==='error';
+ return <div className={'update-notice phase-'+phase+(status.kind==='error'?' is-error':'')} role="status" aria-live="polite">
+  <div className="un-head">
+   <span className="un-icon">{status.kind==='error'?<AlertTriangle size={18}/>:<ArrowDownToLine size={18}/>}</span>
+   <div className="un-text"><b>{title}</b><span>{detail}</span></div>
+   {canAct&&<button type="button" className="un-close" aria-label="Remind me later" title="Later" onClick={onLater}><X size={15}/></button>}
+  </div>
+  {(status.kind==='downloading'||status.kind==='installing')&&<div className={'un-progress'+(pct===null?' is-busy':'')}><i style={{width:status.kind==='installing'?'100%':pct===null?undefined:`${pct}%`}}/></div>}
+  {notesOpen&&notes.length>0&&<ul className="un-notes">{notes.map((n,i)=><li key={i} className={n.bullet?'':'plain'}>{n.text}</li>)}</ul>}
+  {canAct&&<div className="un-actions">
+   {notes.length>0&&<button type="button" className="text-button" aria-expanded={notesOpen} onClick={()=>setNotesOpen(v=>!v)}>{notesOpen?'Hide notes':"What's new"}</button>}
+   <span className="un-spacer"/>
+   <button type="button" className="secondary" onClick={onLater}>Later</button>
+   <button type="button" className="primary small" onClick={onInstall}>{status.kind==='error'?'Try again':'Restart now'}</button>
+  </div>}
  </div>;
 }
